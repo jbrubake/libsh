@@ -52,8 +52,6 @@ _libsh_parse() {
                 *) error=1 ;;
             esac
             ;; # }}}
-        keyword) # {{{
-            ;; # }}}
         *) error=1 ;;
     esac
 
@@ -260,8 +258,8 @@ libsh_option_on_off() {
         0 | n | N | no  | NO  | No)  return 1 ;;
         *)
             case "$2" in
-                f | false | F | FALSE | False) return 1 ;;
                 t | true  | T | TRUE  | True)  return 0 ;;
+                f | false | F | FALSE | False) return 1 ;;
                 *) return 0 ;;
             esac
     esac
@@ -273,8 +271,8 @@ libsh_option_on_off() {
 #
 # @arg $1 string Name of variable to check
 #
-# @exitcode True if variable is set
-# @exitcode False if variable is not set
+# @exitcode True if variable is set to anything but ""
+# @exitcode False if variable is unset or set to ""
 #
 libsh_is_set() { eval "test \$$(libsh_sanitize "$1")"; }
 
