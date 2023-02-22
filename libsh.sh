@@ -146,24 +146,38 @@ _libsh_register() {
     # Registering a single function with no namepace
     if [ -n "$func" ]; then
         if [ "${functions#*"$func"}" != "$functions" ]; then
-            # shellcheck disable=SC2139
-            alias "$func=${module}_$func"
+            _libsh_alias "$ns" "$module" "$func"
         else
             _libsh_error 0 "$LIBSH_ERR_FATAL" "$func not found in $module module"
         fi
     # Registering one or more functions with an optional namespace
     else
         # shellcheck disable=SC2068
-        for f in $@; do
-            _libsh_debug "register $module::$f into ns $ns"
-            if [ -n "$ns" ]; then
-                # shellcheck disable=SC2139
-                alias "$ns::$f=${module}_$f"
-            else
-                # shellcheck disable=SC2139
-                alias "$f=${module}_$f"
-            fi
+        for f in $functions; do
+            _libsh_alias "$ns" "$module" "$f"
         done
+    fi
+}
+
+# _libsh_alias {{{2
+#
+# @description Create a namespaced alias
+#
+# @arg $1 string Namespace
+# @arg $2 string Module name
+# @arg $3 string Alias name
+#
+_libsh_alias() {
+    if [ -n "$1" ]; then
+        _libsh_debug "register $1::$3"
+        # Unquoted variables in alias are OK
+        # shellcheck disable=SC2139
+        alias "$1::$3=$2_$3"
+    else
+        _libsh_debug "register $3"
+        # Unquoted variables in alias are OK
+        # shellcheck disable=SC2139
+        alias "$3=$2_$3"
     fi
 }
 
