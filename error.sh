@@ -50,9 +50,9 @@ fi
 #
 # @stderr $1
 #
-error_mesg() {
+error_mesg() (
     _error_printf "$LIBSH_MESG" "$@"
-}
+)
 
 # error_warn {{{2
 #
@@ -65,11 +65,11 @@ error_mesg() {
 #
 # @stderr $1
 #
-error_warn() {
+error_warn() (
     fmt="$1"; shift
 
     _error_printf "$LIBSH_WARN" "$fmt" "$@" >&2
-}
+)
 
 # error_die {{{2
 #
@@ -83,13 +83,13 @@ error_warn() {
 #
 # @stderr $1
 #
-error_die() {
+error_die() (
     rc="$1"; shift
     fmt="$1"; shift
 
     _error_printf "$LIBSH_ERROR" "$fmt" "$@" >&2
     exit "$rc" || return "$rc"
-}
+)
 
 # error_debug {{{2
 #
@@ -102,7 +102,7 @@ error_die() {
 #
 # @stderr $1
 #
-error_debug() {
+error_debug() (
     fmt="$1"; shift
     # TODO: Maybe use a _error_{en,dis}able_debug()?
     # if _libsh_option_on_off "$DEBUG" false; then
@@ -112,7 +112,7 @@ error_debug() {
         :
     fi
     return 0
-}
+)
 
 # error_error {{{2
 #
@@ -127,7 +127,7 @@ error_debug() {
 #
 # @exitcode: $1 if nonzero
 #
-error_error() {
+error_error() (
     status="$1"; shift
     errnum="$1"; shift
     fmt="$1"; shift
@@ -142,7 +142,7 @@ error_error() {
     if [ "$status" -gt 0 ]; then
         exit "$status" || return "$status"
     fi
-}
+)
 
 # error_error_at_line {{{2
 #
@@ -159,7 +159,7 @@ error_error() {
 #
 # @exitcode: $1 if nonzero
 #
-error_error_at_line() {
+error_error_at_line() (
     status="$1"; shift
     errnum="$1"; shift
     file="$1"; shift
@@ -176,7 +176,7 @@ error_error_at_line() {
     if [ "$status" -gt 0 ]; then
         exit "$status" || return "$status"
     fi
-}
+)
 
 # error_perror {{{2
 #
@@ -188,13 +188,13 @@ error_error_at_line() {
 #
 # @stderr $1:<error message> or <error message>
 #
-error_perror() {
+error_perror() (
     if [ -n "$1" ]; then
         printf "%s: %s\n" "$1" "$(_error_sys_errlist "$errno")" >&2
     else
         printf "%s\n" "$(_error_sys_errlist "$errno")" >&2
     fi
-}
+)
 
 # error_strerror {{{2
 #
@@ -205,6 +205,8 @@ error_perror() {
 # @stdout A string describing the error code
 #
 # @exitcode 1 if $1 is not a valid error code (and set errno=EINVAL)
+#
+# NOTE: Cannot be a sub-shell function because it sets errno
 #
 error_strerror() {
     if ! _error_sys_errlist "$1"; then
@@ -225,13 +227,13 @@ error_strerror() {
 #
 # @stderr $fmt
 #
-_error_printf() {
+_error_printf() (
     fmt="$1$2"; shift 2
 
     # Variable in printf format is OK
     # shellcheck disable=SC2059
     printf -- "$fmt[0m\n" "$@" # -- guards against fmt="--..."
-}
+)
 
 # _error_sys_errlist {{{2
 #
@@ -241,7 +243,7 @@ _error_printf() {
 #
 # @exitcode 1 if error code is invalid; 0 otherwise
 #
-_error_sys_errlist() {
+_error_sys_errlist() (
     case $1 in
         EPERM)           echo "Operation not permitted" ;;
         ENOENT)          echo "No such file or directory" ;;
@@ -380,5 +382,5 @@ _error_sys_errlist() {
         *)                  echo "Unknown error: $1"; return 1 ;;
     esac
     return 0
-}
+)
 

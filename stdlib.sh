@@ -36,7 +36,7 @@ __stdlib__="option_on_off is_set sanitize"
 # @exitcode $2 if value is anything else
 # @exitcode True if $2 is neither True or False
 #
-stdlib_option_on_off() {
+stdlib_option_on_off() (
     case "$1" in
         1 | y | Y | yes | YES | Yes) return 0 ;;
         0 | n | N | no  | NO  | No)  return 1 ;;
@@ -47,7 +47,7 @@ stdlib_option_on_off() {
                 *) return 0 ;;
             esac
     esac
-}
+)
 
 # stdlib_is_set {{{2
 #
@@ -58,7 +58,7 @@ stdlib_option_on_off() {
 # @exitcode True if variable is set to anything but ""
 # @exitcode False if variable is unset or set to ""
 #
-stdlib_is_set() { eval "test \$$(stdlib_sanitize "$1")"; }
+stdlib_is_set() ( eval "test \$$(stdlib_sanitize "$1")"; )
 
 # stdlib_sanitize {{{2
 #
@@ -69,10 +69,10 @@ stdlib_is_set() { eval "test \$$(stdlib_sanitize "$1")"; }
 #
 # @stdout Sanitized string
 #
-stdlib_sanitize() {
+stdlib_sanitize() (
     if [ -z "$2" ]; then
         allowed="a-zA-Z0-9_"
     fi
     printf "%s" "$1" | tr -cd "$allowed"
-}
+)
 

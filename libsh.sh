@@ -25,6 +25,8 @@
 # (obviously the functions themselves will be there, but they won't be exported
 # in the same way as if @import were used)
 #
+# Sourced file cannot be found by shellcheck
+# shellcheck source=/dev/null
 . "$(dirname "$LIBSH")/stdlib.sh"
 __stdlib_sourced__=1
 
@@ -38,6 +40,7 @@ __stdlib_sourced__=1
 # @arg $1 int    Current line number
 # @arg $2 string Keyword to parse
 #
+# NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
 _libsh_parse() {
     line="$1"; shift
     keyword="$1"; shift
@@ -95,6 +98,8 @@ _libsh_parse() {
 #
 # @exitcode LIBSH_ERR_FATAL  if requested module is not found
 #
+# NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
+#
 _libsh_import() {
     stdlib_is_set LIBSH ||
         _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
@@ -138,6 +143,8 @@ _libsh_import() {
 # @arg $2      string Module name
 # @arg $3...$n string List of functions to alias
 #
+# NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
+#
 _libsh_register() {
     local ns="$1"; shift
     local module="$1"; shift
@@ -175,6 +182,8 @@ _libsh_register() {
 # @arg $2 string Module name
 # @arg $3 string Alias name
 #
+# NOTE: cannot be a sub-shell function because it calls 'alias'
+#
 _libsh_alias() {
     if [ -n "$1" ]; then
         _libsh_debug "register $1::$3"
@@ -203,7 +212,7 @@ _libsh_alias() {
 #
 # @see LIBSH_ERR_*
 #
-_libsh_error() {
+_libsh_error() (
     lines=$1; shift
     rc=$1; shift
     msg=$1; shift
@@ -231,7 +240,7 @@ _libsh_error() {
     else
         exit "$LIBSH_ERR_FATAL"
     fi
-} >&2
+) >&2
 
 # _libsh_debug {{{2
 #
@@ -241,11 +250,11 @@ _libsh_error() {
 #
 # @global LIBSH_DEBUG_ON
 #
-_libsh_debug() {
+_libsh_debug() (
     stdlib_option_on_off "$LIBSH_DEBUG_ON" false &&
         printf "DEBUG: %s\n" "$1"
     return 0
-} >&2
+) >&2
 
 # Initialization {{{1
 #

@@ -38,6 +38,8 @@ __net__="has_internet"
 #
 # @requires wget or curl
 #
+# NOTE: Cannot be a sub-shell function because it sets errno
+#
 net_has_internet() {
     url="http://detectportal.firefox.com/success.txt"
 
