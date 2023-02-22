@@ -111,6 +111,7 @@ error_debug() {
     else
         :
     fi
+    return 0
 }
 
 # error_error {{{2
@@ -378,5 +379,6 @@ _error_sys_errlist() {
         EHWPOISON)       echo "Memory page has hardware error" ;;
         *)                  echo "Unknown error: $1"; return 1 ;;
     esac
+    return 0
 }
 
