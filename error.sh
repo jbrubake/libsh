@@ -206,7 +206,7 @@ _error_printf() {
     fmt="$1$2"; shift 2
 
     # shellcheck disable=SC2059
-    printf "$fmt[0m\n" "$@"
+    printf -- "$fmt[0m\n" "$@" # -- guards against fmt="--..."
 }
 
 # __sys_errlist {{{2
