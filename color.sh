@@ -71,7 +71,7 @@ color_FX() {
     esac
 }
 
-if test "$( tput colors )" -ge 0; then
+if tput colors; then
     # Expects: color number 0-255
     color_FG() {
         if [ $# -eq 1 ]; then
