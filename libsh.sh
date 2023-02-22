@@ -311,6 +311,9 @@ if [ -n "$BASH_VERSION" ]; then
     shopt -qs expand_aliases
 fi
 
+# Set "include guard"
+__libsh_sourced__=1
+
 # Register keywords
 #
 if [ -n "$LINENO" ]; then
