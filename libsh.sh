@@ -304,6 +304,13 @@ _libsh_debug "initialize libsh"
 libsh_is_set LIBSH || 
     _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
 
+# Bash doesn't expand aliases in non-interactive scripts
+if [ -n "$BASH_VERSION" ]; then
+    # shopt is only available in Bash
+    # shellcheck disable=SC3044
+    shopt -qs expand_aliases
+fi
+
 # Register keywords
 #
 alias @import="_libsh_parse \$LINENO import"
