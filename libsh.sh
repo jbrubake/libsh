@@ -41,6 +41,9 @@ __stdlib_sourced__=1
 # @arg $2 string Keyword to parse
 #
 # NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
+# NOTE: 'local' is not needed because there are no function calls until this
+# function is ready to exit
+#
 _libsh_parse() {
     line="$1"; shift
     keyword="$1"; shift
@@ -105,10 +108,10 @@ _libsh_import() {
         _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
 
     # TODO: Can I work around needing local?
-    local line="$1"; shift
-    local module="$1"; shift
-    local ns="$1"; shift
-    local func="$1"
+    line="$1"; shift
+    module="$1"; shift
+    ns="$1"; shift
+    func="$1"
 
     if [ -n "$func" ]; then
         _libsh_debug "importing '$func' from '$module'"
@@ -124,9 +127,17 @@ _libsh_import() {
         # Load the module
         if [ -r "$(dirname "$LIBSH")/$module.sh" ]; then
             _libsh_debug "sourcing '$module'"
+            _libsh_var_push line
+            _libsh_var_push module
+            _libsh_var_push ns
+            _libsh_var_push func
             # Sourced file cannot be found by shellcheck
             # shellcheck source=/dev/null
             . "$(dirname "$LIBSH")/$module.sh"
+            _libsh_var_pop func
+            _libsh_var_pop ns
+            _libsh_var_pop module
+            _libsh_var_pop line
         else
             _libsh_error "$line" "$LIBSH_ERR_FATAL" "could not import '$module'"
         fi
@@ -144,12 +155,14 @@ _libsh_import() {
 # @arg $3...$n string List of functions to alias
 #
 # NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
+# NOTE: 'local' is not needed because this function only calls _libsh_alias
+# which does not declare variables
 #
 _libsh_register() {
-    local ns="$1"; shift
-    local module="$1"; shift
-    local func="$1"; shift
-    local functions="$*"
+    ns="$1"; shift
+    module="$1"; shift
+    func="$1"; shift
+    functions="$*"
 
     if [ -n "$func" ]; then
         _libsh_debug "registering '$func' from '$module'"
@@ -255,6 +268,100 @@ _libsh_debug() (
         printf "DEBUG: %s\n" "$1"
     return 0
 ) >&2
+
+# Implement 'local' {{{2
+#
+# This should not be used unless you *really* need it (which libsh.sh does in
+# order to be POSIX compliant)
+#
+_LIBSH_VARIABLE_STACK_SEP=""
+_LIBSH_VARIABLE_STACK=
+
+# Usage: {{{3
+#
+# - When declaring a variable to be 'local', it *cannot* be combined with
+# assignment:
+#
+#     # OK
+#     foo=foo
+#     local foo
+#
+#     # Not OK
+#     local foo=foo
+#
+# - Calls to 'local' **must** be balanced by mirrored calls to '_libsh_var_pop':
+#
+#     # OK
+#     foo=foo
+#     bar=bar
+#     local foo
+#     local bar
+#
+#     other_func
+#
+#     _libsh_var_pop bar
+#     _libsh_var_pop foo
+#
+# func_a() {
+#   foo=foo
+#   bar=bar
+#   local foo
+#   local bar
+#
+#   func_b
+#
+#   _libsh_var_pop bar
+#   _libsh_var_pop foo
+#
+#   echo "foo final = $foo"
+#   echo "bar final = $bar"
+# }
+#
+# func_b() {
+#   local foo
+#   local bar
+#   foo=FOO
+#   bar=BAR
+#
+#   echo "foo in func_b = $foo"
+#   echo "bar in func_b = $bar"
+# }
+#
+# $ func_a
+#   FOO
+#   BAR
+#   foo
+#   bar
+#
+# _libsh_var_push {{{3
+#
+# @description Add the value of a variable onto a stack
+# The variable can contain any character except for ASCII 0x1F (US)
+#
+# @arg $1 string Name of variable to push onto the stack
+#
+# @global _LIBSH_VARIABLE_STACK
+# @global _LIBSH_VARIABLE_STACK_SEP
+#
+_libsh_var_push() {
+    eval "v=\$$1"
+    _LIBSH_VARIABLE_STACK="$v$_LIBSH_VARIABLE_STACK_SEP$_LIBSH_VARIABLE_STACK"
+}
+
+# _libsh_var_pop {{{3
+#
+# @description Pop a value off the stack and set a variable equal to that value
+#
+# @arg $1 string Name of variable to pop the value to
+#
+# @global _LIBSH_VARIABLE_STACK
+# @global _LIBSH_VARIABLE_STACK_SEP
+#
+_libsh_var_pop() {
+    v="${_LIBSH_VARIABLE_STACK%%"$_LIBSH_VARIABLE_STACK_SEP"*}"
+    _LIBSH_VARIABLE_STACK="${_LIBSH_VARIABLE_STACK#"$v$_LIBSH_VARIABLE_STACK_SEP"}"
+    eval "$1=$v"
+}
 
 # Initialization {{{1
 #
