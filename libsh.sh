@@ -200,7 +200,7 @@ _libsh_error() {
     rc=$1; shift
     msg=$1; shift
 
-    if [ "$lines" -eq 0 ]; then
+    if [ "$lines" = "0" ]; then
         lines=""
     else
         lines="$lines:"
