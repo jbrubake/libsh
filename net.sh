@@ -4,7 +4,7 @@ __net__="has_internet"
 
 # Functions {{{1
 #
-# _net_has_internet {{{2
+# net_has_internet {{{2
 #
 # @description Check for an internet connection. Based on
 # https://github.com/libremesh/lime-packages/blob/master/packages/check-internet/files/usr/bin/check-internet
@@ -17,7 +17,7 @@ __net__="has_internet"
 #
 # @requires wget or curl
 #
-_net_has_internet() {
+net_has_internet() {
     url="http://detectportal.firefox.com/success.txt"
 
     if type wget >/dev/null 2>&1; then

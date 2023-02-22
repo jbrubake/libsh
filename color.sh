@@ -16,7 +16,7 @@ __color__="FG BG FX"
 #
 # Changed to use functions instead of hashes for speed
 ###################################################
-_color_fx() {
+color_FX() {
     case "$1" in
         reset)       printf "[0m"   ;;
         bold)        printf "[1m"   ;;
@@ -52,14 +52,14 @@ _color_fx() {
 
 if test "$( tput colors )" -ge 0; then
     # Expects: color number 0-255
-    _color_fg() {
+    color_FG() {
         if [ $# -eq 1 ]; then
             echo "[38;5;$1m"
         elif [ $# -eq 3 ]; then
             echo "[38;2;$1;$2;$3m"
         fi
     }
-    _color_bg() {
+    color_BG() {
         if [ $# -eq 1 ]; then
             echo "[48;5;$1m"
         elif [ $# -eq 3 ]; then
@@ -67,7 +67,7 @@ if test "$( tput colors )" -ge 0; then
         fi
     }
 else
-    _color_fg()  { :; }
-    _color_bg()  { :; }
+    color_FG()  { :; }
+    color_BG()  { :; }
 fi
 

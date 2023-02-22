@@ -154,7 +154,7 @@ fi
 
 # @section Exported functions {{{1
 #
-# _error_mesg {{{2
+# error_mesg {{{2
 #
 # @description Print a message
 #
@@ -165,11 +165,11 @@ fi
 #
 # @stderr $1
 #
-_error_mesg() {
-    __error_printf "$LIBSH_MESG" "$@"
+error_mesg() {
+    _error_printf "$LIBSH_MESG" "$@"
 }
 
-# _error_warn {{{2
+# error_warn {{{2
 #
 # @description Print a warning message
 #
@@ -180,13 +180,13 @@ _error_mesg() {
 #
 # @stderr $1
 #
-_error_warn() {
+error_warn() {
     fmt="$1"; shift
 
-    __error_printf "$LIBSH_WARN" "$fmt" "$@" >&2
+    _error_printf "$LIBSH_WARN" "$fmt" "$@" >&2
 }
 
-# _error_die {{{2
+# error_die {{{2
 #
 # @description Print an error message and exit
 #
@@ -198,15 +198,15 @@ _error_warn() {
 #
 # @stderr $1
 #
-_error_die() {
+error_die() {
     rc="$1"; shift
     fmt="$1"; shift
 
-    __error_printf "$LIBSH_ERROR" "$fmt" "$@" >&2
+    _error_printf "$LIBSH_ERROR" "$fmt" "$@" >&2
     exit "$rc" || return "$rc"
 }
 
-# _error_debug {{{2
+# error_debug {{{2
 #
 # @description Print a debugging message
 #
@@ -217,18 +217,18 @@ _error_die() {
 #
 # @stderr $1
 #
-_error_debug() {
+error_debug() {
     fmt="$1"; shift
     # TODO: Maybe use a _error_{en,dis}able_debug()?
     # if _libsh_option_on_off "$DEBUG" false; then
     if libsh::option_on_off "$DEBUG" false; then
-        __error_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
+        _error_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
     else
         :
     fi
 }
 
-# _error_error {{{2
+# error_error {{{2
 #
 # @description Print an annotated error message and optionally exit
 #
@@ -241,24 +241,24 @@ _error_debug() {
 #
 # @exitcode: $1 if nonzero
 #
-_error_error() {
-    _status="$1"; shift
-    _errnum="$1"; shift
-    _fmt="$1"; shift
-    _msg=
+error_error() {
+    status="$1"; shift
+    errnum="$1"; shift
+    fmt="$1"; shift
+    msg=
 
-    if [ "$_errnum" -ne 0 ]; then
-        _msg=": $(_error_strerror "$_errnum")"
+    if [ "$errnum" -ne 0 ]; then
+        msg=": $(error_strerror "$_errnum")"
     fi
 
-    __error_printf "$LIBSH_ERROR" "$0: $_fmt$_msg" "$@" >&2
+    _error_printf "$LIBSH_ERROR" "$0: $fmt$msg" "$@" >&2
 
-    if [ "$_status" -gt 0 ]; then
-        exit "$_status" || return "$_status"
+    if [ "$status" -gt 0 ]; then
+        exit "$status" || return "$status"
     fi
 }
 
-# _error_error_at_line {{{2
+# error_error_at_line {{{2
 #
 # @description Print an annotated error message and optionally exit
 #
@@ -273,26 +273,26 @@ _error_error() {
 #
 # @exitcode: $1 if nonzero
 #
-_error_error_at_line() {
-    _status="$1"; shift
-    _errnum="$1"; shift
-    _file="$1"; shift
-    _line="$1"; shift
-    _fmt="$1"; shift
-    _msg=
+error_error_at_line() {
+    status="$1"; shift
+    errnum="$1"; shift
+    file="$1"; shift
+    line="$1"; shift
+    fmt="$1"; shift
+    msg=
 
-    if [ "$_errnum" -ne 0 ]; then
-        _msg=": $(_error_strerror "$_errnum")"
+    if [ "$errnum" -ne 0 ]; then
+        msg=": $(error_strerror "$errnum")"
     fi
 
-    __error_printf "$LIBSH_ERROR" "$0:$_line:$_file: $_fmt$_msg" "$@" >&2
+    _error_printf "$LIBSH_ERROR" "$0:$line:$file: $fmt$msg" "$@" >&2
 
-    if [ "$_status" -gt 0 ]; then
-        exit "$_status" || return "$_status"
+    if [ "$status" -gt 0 ]; then
+        exit "$status" || return "$status"
     fi
 }
 
-# _error_perror {{{2
+# error_perror {{{2
 #
 # @description Print a message to stderr describing the last error
 #
@@ -302,7 +302,7 @@ _error_error_at_line() {
 #
 # @stderr $1:<error message> or <error message>
 #
-_error_perror() {
+error_perror() {
     if [ -n "$1" ]; then
         printf "%s: %s\n" "$1" "$(__sys_errlist "$errno")" >&2
     else
@@ -310,7 +310,7 @@ _error_perror() {
     fi
 }
 
-# _error_strerror {{{2
+# error_strerror {{{2
 #
 # @description Return a string that describes the given error code
 #
@@ -320,7 +320,7 @@ _error_perror() {
 #
 # @exitcode 1 if $1 is not a valid error code (and set errno=$EINVAL)
 #
-_error_strerror() {
+error_strerror() {
     if ! __sys_errlist "$1"; then
         errno="$EINVAL"
         return 1
@@ -329,7 +329,7 @@ _error_strerror() {
 
 # @section Internal functions {{{1
 #
-# __error_printf {{{2
+# _error_printf {{{2
 #
 # @description
 #
@@ -339,7 +339,7 @@ _error_strerror() {
 #
 # @stderr $fmt
 #
-__error_printf() {
+_error_printf() {
     fmt="$1$2"; shift 2
 
     # shellcheck disable=SC2059
