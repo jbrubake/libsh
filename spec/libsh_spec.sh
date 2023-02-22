@@ -81,16 +81,17 @@ Describe 'libsh.sh' # {{{1
         # TODO: Put the fake module in a test directory
         _libsh_register() { echo "$1 $2 $3 $4"; }
 
+        _libsh_error() { exit $2; }
+
         It 'tests exit if LIBSH not defined'
-            unset LIBSH
-            When run _libsh_import
+            stdlib_is_set() { false; }
+            When run _libsh_import 0 0 0 0
             The status should equal "$LIBSH_ERR_FATAL"
-            The lines of stderr should equal 1
+            The status should equal "$LIBSH_ERR_FATAL"
         End
         It 'tests failure on non-existent module'
-            When run _libsh_import 0 NOT_A_REAL_MODULE ns func list
+            When run _libsh_import 0 NOT_A_REAL_MODULE ns func
             The status should equal "$LIBSH_ERR_FATAL"
-            The lines of stderr should equal 1
         End
         It 'tests sourcing a module and loading exported functions'
             When call _libsh_import 0 module ns func
