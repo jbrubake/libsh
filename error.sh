@@ -189,9 +189,9 @@ error_error_at_line() {
 #
 error_perror() {
     if [ -n "$1" ]; then
-        printf "%s: %s\n" "$1" "$(__sys_errlist "$errno")" >&2
+        printf "%s: %s\n" "$1" "$(_error_sys_errlist "$errno")" >&2
     else
-        printf "%s\n" "$(__sys_errlist "$errno")" >&2
+        printf "%s\n" "$(_error_sys_errlist "$errno")" >&2
     fi
 }
 
@@ -206,7 +206,7 @@ error_perror() {
 # @exitcode 1 if $1 is not a valid error code (and set errno=EINVAL)
 #
 error_strerror() {
-    if ! __sys_errlist "$1"; then
+    if ! _error_sys_errlist "$1"; then
         errno="EINVAL"
         return 1
     fi
@@ -232,7 +232,7 @@ _error_printf() {
     printf -- "$fmt[0m\n" "$@" # -- guards against fmt="--..."
 }
 
-# __sys_errlist {{{2
+# _error_sys_errlist {{{2
 #
 # @description Print the error message associated with a given error code
 #
@@ -240,7 +240,7 @@ _error_printf() {
 #
 # @exitcode 1 if error code is invalid; 0 otherwise
 #
-__sys_errlist() {
+_error_sys_errlist() {
     case $1 in
         EPERM)           echo "Operation not permitted" ;;
         ENOENT)          echo "No such file or directory" ;;
