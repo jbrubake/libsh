@@ -46,7 +46,7 @@ color_FX() {
         dashfancyul) printf "[4:5m" ;;
         nofancyul)   printf "[4:0m" ;;
 
-        *)           echo "";
+        *)           printf "";
     esac
 }
 
@@ -54,16 +54,16 @@ if test "$( tput colors )" -ge 0; then
     # Expects: color number 0-255
     color_FG() {
         if [ $# -eq 1 ]; then
-            echo "[38;5;$1m"
+            printf "[38;5;%sm" "$1"
         elif [ $# -eq 3 ]; then
-            echo "[38;2;$1;$2;$3m"
+            printf "[38;2;%s;%s;%sm" "$1" "$2" "$3"
         fi
     }
     color_BG() {
         if [ $# -eq 1 ]; then
-            echo "[48;5;$1m"
+            printf "[48;5;%sm" "$1"
         elif [ $# -eq 3 ]; then
-            echo "[48;2;$1;$2;$3m"
+            printf "[48;2;%s;%s;%sm" "$1" "$2" "$3"
         fi
     }
 else
