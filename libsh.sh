@@ -99,7 +99,11 @@ _libsh_import() {
     local ns="$1"; shift
     local func="$1"
 
-    _libsh_debug "importing '$module' ($func) as '$ns'"
+    if [ -n "$func" ]; then
+        _libsh_debug "importing '$func' from '$module'"
+    else
+        _libsh_debug "importing '$module' into '$ns'"
+    fi
 
     # Check if module has already been sourced
     if [ -z "$(eval echo \$__libsh_"$(libsh_sanitize "$module")"__)" ]; then
@@ -133,9 +137,14 @@ _libsh_register() {
     local func="$1"; shift
     local functions="$*"
 
+    if [ -n "$func" ]; then
+        _libsh_debug "registering '$func' from '$module'"
+    else
+        _libsh_debug "registering '$module' into '$ns'"
+    fi
+
     # Registering a single function with no namepace
     if [ -n "$func" ]; then
-        _libsh_debug "register $module::$func"
         if [ "${functions#*"$func"}" != "$functions" ]; then
             # shellcheck disable=SC2139
             alias "$func=${module}_$func"
