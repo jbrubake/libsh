@@ -236,6 +236,7 @@ _libsh_error() {
 _libsh_debug() {
     libsh_option_on_off "$LIBSH_DEBUG_ON" false &&
         printf "DEBUG: %s\n" "$1"
+    return 0
 } >&2
 
 # @section Exported functions {{{1
