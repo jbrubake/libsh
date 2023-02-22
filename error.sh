@@ -1,15 +1,17 @@
-@import libsh
+@import stdlib
 
 # Initialization {{{1
 #
+@import stdlib
+
 __error__="perror strerror error error_at_line warn mesg die debug"
 
 # Color support by default
 #
-if libsh::option_on_off "$LIBSH_COLOR" true; then
+if stdlib::option_on_off "$LIBSH_COLOR" true; then
     @import color
 fi
-if libsh::option_on_off "$LIBSH_COLOR" true; then
+if stdlib::option_on_off "$LIBSH_COLOR" true; then
     LIBSH_DEBUG="$(color::FX dim)"
     LIBSH_MESG=
     LIBSH_WARN="$(color::FG 220)"

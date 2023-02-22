@@ -19,7 +19,15 @@
 # @description
 #   lib.sh description
 #
-# TODO: sanitize print statements
+# Import necessary modules {{{1
+#
+# Import them manually to limit namespace pollution
+# (obviously the functions themselves will be there, but they won't be exported
+# in the same way as if @import were used)
+#
+. "$(dirname "$LIBSH")/stdlib.sh"
+__stdlib_sourced__=1
+
 # @section Internal functions {{{1
 #
 # _libsh_parse {{{2
@@ -88,7 +96,7 @@ _libsh_parse() {
 # @exitcode LIBSH_ERR_FATAL  if requested module is not found
 #
 _libsh_import() {
-    libsh_is_set LIBSH ||
+    stdlib_is_set LIBSH ||
         _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
 
     # TODO: Can I work around needing local?
@@ -104,9 +112,9 @@ _libsh_import() {
     fi
 
     # Check if module has already been sourced
-    if [ -z "$(eval echo \$__libsh_"$(libsh_sanitize "$module")"__)" ]; then
+    if [ -z "$(eval echo \$__"$(stdlib_sanitize "$module")"_sourced__)" ]; then
         # Set "include guard"
-        eval __libsh_"$(libsh_sanitize "$module")"__=1
+        eval __"$(stdlib_sanitize "$module")"_sourced__=1
 
         # Load the module
         if [ -r "$(dirname "$LIBSH")/$module.sh" ]; then
@@ -234,63 +242,10 @@ _libsh_error() {
 # @global LIBSH_DEBUG_ON
 #
 _libsh_debug() {
-    libsh_option_on_off "$LIBSH_DEBUG_ON" false &&
+    stdlib_option_on_off "$LIBSH_DEBUG_ON" false &&
         printf "DEBUG: %s\n" "$1"
     return 0
 } >&2
-
-# @section Exported functions {{{1
-# libsh_option_on_off {{{2
-#
-# @description Test if a string is set to Yes or No
-#
-# @arg $1 string Value to test
-# @arg $2 bool   Default value (true or false)
-#
-# @exitcode True if value is 1|y|Y|yes|YES|Yes
-# @exitcode False if value is 0|n|N|no|NO|No
-# @exitcode $2 if value is anything else
-# @exitcode True if $2 is neither True or False
-#
-libsh_option_on_off() {
-    case "$1" in
-        1 | y | Y | yes | YES | Yes) return 0 ;;
-        0 | n | N | no  | NO  | No)  return 1 ;;
-        *)
-            case "$2" in
-                t | true  | T | TRUE  | True)  return 0 ;;
-                f | false | F | FALSE | False) return 1 ;;
-                *) return 0 ;;
-            esac
-    esac
-}
-
-# libsh_is_set {{{2
-#
-# @description Test if a variable is set or not
-#
-# @arg $1 string Name of variable to check
-#
-# @exitcode True if variable is set to anything but ""
-# @exitcode False if variable is unset or set to ""
-#
-libsh_is_set() { eval "test \$$(libsh_sanitize "$1")"; }
-
-# libsh_sanitize {{{2
-#
-# @description Sanitize input
-#
-# @arg $1 string String to sanitize
-# @arg $2 string Allowed characters (see tr(1))
-#
-# @stdout Sanitized string
-#
-libsh_sanitize() {
-    if [ -z "$2" ]; then
-        allowed="a-zA-Z0-9_"
-    fi
-    printf "%s" "$1" | tr -cd "$allowed"
-}
 
 # Initialization {{{1
 #
@@ -301,7 +256,7 @@ export LIBSH_ERR_FATAL
 
 _libsh_debug "initialize libsh"
 
-libsh_is_set LIBSH || 
+stdlib_is_set LIBSH || 
     _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
 
 # Bash doesn't expand aliases in non-interactive scripts
@@ -311,9 +266,6 @@ if [ -n "$BASH_VERSION" ]; then
     shopt -qs expand_aliases
 fi
 
-# Set "include guard"
-__libsh_sourced__=1
-
 # Register keywords
 #
 if [ -n "$LINENO" ]; then
@@ -321,8 +273,4 @@ if [ -n "$LINENO" ]; then
 else
     alias @import="_libsh_parse ? import"
 fi
-
-# Exported functions
-#
-__libsh__="option_on_off is_set sanitize"
 
