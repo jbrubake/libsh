@@ -106,7 +106,7 @@ error_debug() {
     fmt="$1"; shift
     # TODO: Maybe use a _error_{en,dis}able_debug()?
     # if _libsh_option_on_off "$DEBUG" false; then
-    if libsh::option_on_off "$DEBUG" false; then
+    if stdlib::option_on_off "$DEBUG" false; then
         _error_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
     else
         :
