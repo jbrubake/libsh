@@ -26,7 +26,7 @@ net_has_internet() {
         test "$(curl -s $url)" = "success"
     else
         # shellcheck disable=SC2034
-        errno="$ENOENT"
+        errno="ENOENT"
         return 2
     fi
 
