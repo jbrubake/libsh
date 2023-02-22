@@ -287,9 +287,9 @@ libsh_is_set() { eval "test \$$(libsh_sanitize "$1")"; }
 #
 libsh_sanitize() {
     if [ -z "$2" ]; then
-        _allowed="a-zA-Z0-9_"
+        allowed="a-zA-Z0-9_"
     fi
-    printf "%s" "$1" | tr -cd "$_allowed"
+    printf "%s" "$1" | tr -cd "$allowed"
 }
 
 # Initialization {{{1
