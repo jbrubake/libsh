@@ -6,13 +6,14 @@ __error__="perror strerror error error_at_line warn mesg die debug"
 
 # Color support by default
 #
-# if _libsh_option_on_off "$LIBSH_COLOR" true; then
 if libsh::option_on_off "$LIBSH_COLOR" true; then
     @import color
-    LIBSH_DEBUG="$(_color_fx dim)"
+fi
+if libsh::option_on_off "$LIBSH_COLOR" true; then
+    LIBSH_DEBUG="$(color::FX dim)"
     LIBSH_MESG=
-    LIBSH_WARN="$(_color_fg 220)"
-    LIBSH_ERROR="$(_color_fg 160)"
+    LIBSH_WARN="$(color::FG 220)"
+    LIBSH_ERROR="$(color::FG 160)"
 fi
 
 # @section Exported functions {{{1
