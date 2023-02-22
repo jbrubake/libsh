@@ -113,6 +113,7 @@ _libsh_import() {
         # Load the module
         if [ -r "$(dirname "$LIBSH")/$module.sh" ]; then
             _libsh_debug "sourcing '$module'"
+            # Sourced file cannot be found by shellcheck
             # shellcheck source=/dev/null
             . "$(dirname "$LIBSH")/$module.sh"
         else
@@ -152,6 +153,7 @@ _libsh_register() {
         fi
     # Registering one or more functions with an optional namespace
     else
+        # $functions is unquoted in order to properly split by word
         # shellcheck disable=SC2068
         for f in $functions; do
             _libsh_alias "$ns" "$module" "$f"

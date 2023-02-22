@@ -205,6 +205,7 @@ error_strerror() {
 _error_printf() {
     fmt="$1$2"; shift 2
 
+    # Variable in printf format is OK
     # shellcheck disable=SC2059
     printf -- "$fmt[0m\n" "$@" # -- guards against fmt="--..."
 }
