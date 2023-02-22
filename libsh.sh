@@ -313,7 +313,11 @@ fi
 
 # Register keywords
 #
-alias @import="_libsh_parse \$LINENO import"
+if [ -n "$LINENO" ]; then
+    alias @import="_libsh_parse \$LINENO import"
+else
+    alias @import="_libsh_parse ? import"
+fi
 
 # Exported functions
 #
