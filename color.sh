@@ -71,7 +71,7 @@ color_FX() (
     esac
 )
 
-if tput colors; then
+if tput colors >/dev/null 2>&1; then
     # Expects: color number 0-255
     color_FG() (
         if [ $# -eq 1 ]; then
