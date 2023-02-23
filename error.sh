@@ -23,97 +23,10 @@
 #
 @import stdlib
 
-__error__="perror strerror error error_at_line warn mesg die debug"
-
-# Color support by default
-#
-if stdlib::option_on_off "$LIBSH_COLOR" true; then
-    @import color
-fi
-if stdlib::option_on_off "$LIBSH_COLOR" true; then
-    LIBSH_DEBUG="$(color::FX dim)"
-    LIBSH_MESG=
-    LIBSH_WARN="$(color::FG 220)"
-    LIBSH_ERROR="$(color::FG 160)"
-fi
+__error__="perror strerror error error_at_line"
 
 # @section Exported functions {{{1
 #
-# error_mesg {{{2
-#
-# @description Print a message
-#
-# @global LIBSH_MESG specifies optional coloring
-#
-# @arg $1  string    printf(1) format string
-# @arg ... printf(1) format string parameters
-#
-# @stderr $1
-#
-error_mesg() (
-    _error_printf "$LIBSH_MESG" "$@"
-)
-
-# error_warn {{{2
-#
-# @description Print a warning message
-#
-# @global LIBSH_WARN specifies optional coloring
-#
-# @arg $1  string    printf(1) format string
-# @arg ... printf(1) format string parameters
-#
-# @stderr $1
-#
-error_warn() (
-    fmt="$1"; shift
-
-    _error_printf "$LIBSH_WARN" "$fmt" "$@" >&2
-)
-
-# error_die {{{2
-#
-# @description Print an error message and exit
-#
-# @global LIBSH_ERROR specifies optional coloring
-#
-# @arg $1  int       Exit code
-# @arg $2  string    printf(1) format string
-# @arg ... printf(1) format string parameters
-#
-# @stderr $1
-#
-error_die() (
-    rc="$1"; shift
-    fmt="$1"; shift
-
-    _error_printf "$LIBSH_ERROR" "$fmt" "$@" >&2
-    exit "$rc" || return "$rc"
-)
-
-# error_debug {{{2
-#
-# @description Print a debugging message
-#
-# @global LIBSH_DEBUG specifies optional coloring
-#
-# @arg $1  string    printf(1) format string
-# @arg ... printf(1) format string parameters
-#
-# @stderr $1
-#
-error_debug() (
-    fmt="$1"; shift
-    # TODO: Maybe use a _error_{en,dis}able_debug()?
-    # if _libsh_option_on_off "$DEBUG" false; then
-    if stdlib::option_on_off "$DEBUG" false; then
-        _error_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
-    else
-        :
-    fi
-    return 0
-)
-
 # error_error {{{2
 #
 # @description Print an annotated error message and optionally exit
