@@ -213,7 +213,8 @@ _error_sys_errlist() {
         ENOEXEC         | 8) echo "Exec format error";                                  return 8   ;;
         EBADF           | 9) echo "Bad file descriptor";                                return 9   ;;
         ECHILD          | 10) echo "No child processes";                                return 10  ;;
-        EAGAIN          | 11) echo "Resource temporarily unavailable";                  return 11  ;;
+        EAGAIN | \
+        EWOULDBLOCK     | 11) echo "Resource temporarily unavailable";                  return 11  ;;
         ENOMEM          | 12) echo "Cannot allocate memory";                            return 12  ;;
         EACCES          | 13) echo "Permission denied";                                 return 13  ;;
         EFAULT          | 14) echo "Bad address";                                       return 14  ;;
@@ -237,13 +238,13 @@ _error_sys_errlist() {
         EPIPE           | 32) echo "Broken pipe";                                       return 32  ;;
         EDOM            | 33) echo "Numerical argument out of domain";                  return 33  ;;
         ERANGE          | 34) echo "Numerical result out of range";                     return 34  ;;
-        EDEADLK         | 35) echo "Resource deadlock avoided";                         return 35  ;;
+        EDEADLK   | \
+        EDEADLOCK       | 35) echo "Resource deadlock avoided";                         return 35  ;;
         ENAMETOOLONG    | 36) echo "File name too long";                                return 36  ;;
         ENOLCK          | 37) echo "No locks available";                                return 37  ;;
         ENOSYS          | 38) echo "Function not implemented";                          return 38  ;;
         ENOTEMPTY       | 39) echo "Directory not empty";                               return 39  ;;
         ELOOP           | 40) echo "Too many levels of symbolic links";                 return 40  ;;
-        EWOULDBLOCK     | 11) echo "Resource temporarily unavailable";                  return 11  ;;
         ENOMSG          | 42) echo "No message of desired type";                        return 42  ;;
         EIDRM           | 43) echo "Identifier removed";                                return 43  ;;
         ECHRNG          | 44) echo "Channel number out of range";                       return 44  ;;
@@ -260,7 +261,6 @@ _error_sys_errlist() {
         ENOANO          | 55) echo "No anode";                                          return 55  ;;
         EBADRQC         | 56) echo "Invalid request code";                              return 56  ;;
         EBADSLT         | 57) echo "Invalid slot";                                      return 57  ;;
-        EDEADLOCK       | 35) echo "Resource deadlock avoided";                         return 35  ;;
         EBFONT          | 59) echo "Bad font file format";                              return 59  ;;
         ENOSTR          | 60) echo "Device not a stream";                               return 60  ;;
         ENODATA         | 61) echo "No data available";                                 return 61  ;;
@@ -297,7 +297,8 @@ _error_sys_errlist() {
         ENOPROTOOPT     | 92) echo "Protocol not available";                            return 92  ;;
         EPROTONOSUPPORT | 93) echo "Protocol not supported";                            return 93  ;;
         ESOCKTNOSUPPORT | 94) echo "Socket type not supported";                         return 94  ;;
-        EOPNOTSUPP      | 95) echo "Operation not supported";                           return 95  ;;
+        EOPNOTSUPP | \
+        ENOTSUP         | 95) echo "Operation not supported";                           return 95  ;;
         EPFNOSUPPORT    | 96) echo "Protocol family not supported";                     return 96  ;;
         EAFNOSUPPORT    | 97) echo "Address family not supported by protocol";          return 97  ;;
         EADDRINUSE      | 98) echo "Address already in use";                            return 98  ;;
@@ -336,13 +337,13 @@ _error_sys_errlist() {
         ENOTRECOVERABLE | 131) echo "State not recoverable";                            return 131 ;;
         ERFKILL         | 132) echo "Operation not possible due to RF-kill";            return 132 ;;
         EHWPOISON       | 133) echo "Memory page has hardware error";                   return 133 ;;
-        ENOTSUP         | 95)  echo "Operation not supported";                          return 95  ;;
 
         ESYNTAX         | 134) echo "Syntax error";                                     return 134 ;;
         EFATAL          | 135) echo "Fatal error";                                      return 135 ;;
 
         # Everything else is not a real error
-        ENOTREAL | *    | 255) echo "Unknown error: $1";                                return 255 ;;
+        # ENOTREAL | 255 |
+        *)                    echo "Unknown error: $1";                                return 255 ;;
     esac
 }
 
