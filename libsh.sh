@@ -58,11 +58,11 @@ _libsh_parse() {
             case $# in
                 # @import <module>
                 #  (use basename because <module> can be a path)
-                1) set "$1" "$(basename $1)" "" ;;
+                1) set "$1" "$(basename "$1")" "" ;;
                 3) case "$2" in
                         # @import <module>   as   <namespace>
                         #  (use basename because <module> can be a path)
-                        as)   set "$(basename $1)" "$3" "" ;;
+                        as)   set "$(basename "$1")" "$3" "" ;;
                         # @import <function> from <module>
                         from) set "$3" "" "$1" ;;
                         *)    error=1 ;;
@@ -141,7 +141,7 @@ _libsh_import() {
         # Check if module has already been sourced
         if [ -z "$(eval echo "\$__${module}_sourced__")" ]; then
             # Set "include guard"
-            eval __${module}_sourced__=1
+            eval "__${module}_sourced__=1"
 
             # Load the module
             _libsh_debug "sourcing '$module'"
