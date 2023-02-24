@@ -59,11 +59,11 @@ _libsh_parse() {
                 # @import <module>
                 #  (use basename because <module> can be a path)
                 1) set "$1" "$(basename $1)" "" ;;
-                # @import <module>   as   <namespace>
-                # @import <function> from <module>
-                #  (use basename because <module> can be a path)
                 3) case "$2" in
-                        as)   set "$1" "$(basename $3)" "" ;;
+                        # @import <module>   as   <namespace>
+                        #  (use basename because <module> can be a path)
+                        as)   set "$(basename $1)" "$3" "" ;;
+                        # @import <function> from <module>
                         from) set "$3" "" "$1" ;;
                         *)    error=1 ;;
                     esac ;;
