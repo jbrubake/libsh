@@ -1,4 +1,6 @@
 --require spec_helper
+--default-path "**/tests"
+--load-path "tests"
 
 ## Default kcov (coverage) options
 # --kcov-options "--include-path=. --path-strip-level=1"
