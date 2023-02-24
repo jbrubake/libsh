@@ -44,11 +44,13 @@ _libsh_parse() {
         import) # {{{
             case $# in
                 # @import <module>
-                1) set "$1" "$1" "" ;;
+                #  (use basename because <module> can be a path)
+                1) set "$1" "$(basename $1)" "" ;;
                 # @import <module>   as   <namespace>
                 # @import <function> from <module>
+                #  (use basename because <module> can be a path)
                 3) case "$2" in
-                        as)   set "$1" "$3" "" ;;
+                        as)   set "$1" "$(basename $3)" "" ;;
                         from) set "$3" "" "$1" ;;
                         *)    error=1 ;;
                     esac ;;
@@ -108,27 +110,40 @@ _libsh_import() {
         _libsh_debug "importing '$module' into '$ns'"
     fi
 
-    # Check if module has already been sourced
-    if [ -z "$(eval echo \$__"$(stdlib_sanitize "$module")"_sourced__)" ]; then
-        # Set "include guard"
-        eval __"$(stdlib_sanitize "$module")"_sourced__=1
+    # Get module path and name
+    case "$module" in
+        /* | \.*) # Absolute or relative path
+            path="$(dirname "$module")"
+            module="$(basename "$module")"
+            ;;
+        *) # Paths that don't start with . or / are resolved
+           # relative to the LIBSH install
+            path="$(dirname "$LIBSH")/$(dirname "$module")"
+            module="$(basename "$module")"
+            ;;
+    esac
 
-        # Load the module
-        if [ -r "$(dirname "$LIBSH")/$module.sh" ]; then
+    if [ -r "$path/$module.sh" ]; then
+        # Check if module has already been sourced
+        if [ -z "$(eval echo "\$__${module}_sourced__")" ]; then
+            # Set "include guard"
+            eval __${module}_sourced__=1
+
+            # Load the module
             _libsh_debug "sourcing '$module'"
             _libsh_var_push line
             _libsh_var_push module
             _libsh_var_push ns
             _libsh_var_push func
+
             # Sourced file cannot be found by shellcheck
             # shellcheck source=/dev/null
-            . "$(dirname "$LIBSH")/$module.sh"
+            . "$path/$module.sh"
+
             _libsh_var_pop func
             _libsh_var_pop ns
             _libsh_var_pop module
             _libsh_var_pop line
-        else
-            _libsh_error "$line" "$LIBSH_ERR_FATAL" "could not import '$module'"
         fi
     else
         _libsh_error EFATAL "$line" "could not import '$module'"
