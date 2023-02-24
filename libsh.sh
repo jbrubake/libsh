@@ -248,7 +248,7 @@ _libsh_debug() (
     return 0
 ) >&2
 
-# _libsh_error_at_line {{{2
+# _libsh_error {{{2
 #
 # @description Print an annotated error message and optionally exit
 #
@@ -256,7 +256,7 @@ _libsh_debug() (
 # @arg $2  int       Line number of error (optional)
 # @arg $3  string    Additional error message
 #
-# @stderr $0:libsh.sh:$2: <error message>: $3
+# @stderr $0:$2: <error message>: $3
 #
 # @exitcode: $1 if nonzero
 #
@@ -267,11 +267,11 @@ _libsh_error() {
     msg="$1"; shift
 
     case "$errnum" in
-        EFATAL)  err="fatal error";  rc=1 ;;
-        ESYNTAX) err="syntax error"; rc=2 ;;
+        EFATAL)  err="Fatal error";  rc=1 ;;
+        ESYNTAX) err="Syntax error"; rc=2 ;;
     esac
 
-    printf -- "$0:libsh.sh:$line: %s: %s\n" "$msg" "$err" >&2
+    printf -- "$0:$line: %s: %s\n" "$err" "$msg" >&2
 
     exit "$rc" || return "$rc"
 }
