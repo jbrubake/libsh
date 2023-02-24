@@ -45,12 +45,15 @@ fi
 #
 # @global LIBSH_MESG specifies optional coloring
 #
-# @arg $1  string    printf(1) format string
+# @arg $1  int       Verbosity level
+# @arg $2  string    printf(1) format string
 # @arg ... printf(1) format string parameters
 #
 # @stderr $1
 #
 stdio_mesg() (
+    v="$1"; shift
+    test "$v" -gt "$LIBSH_VERBOSE" && return
     _stdio_printf "$LIBSH_MESG" "$@"
 )
 
@@ -97,20 +100,22 @@ stdio_die() (
 #
 # @global LIBSH_DEBUG specifies optional coloring
 #
-# @arg $1  string    printf(1) format string
+# @arg $1  int       Debug level
+# @arg $2  string    printf(1) format string
 # @arg ... printf(1) format string parameters
 #
 # @stderr $1
 #
 stdio_debug() (
+    d="$1"; shift
     fmt="$1"; shift
-    # TODO: Maybe use a error_{en,dis}able_debug()?
-    # if _libsh_option_on_off "$DEBUG" false; then
+
+    test "$d" -gt "$LIBSH_DEBUG_LVL" && return
+
     if stdlib::option_on_off "$DEBUG" false; then
         _stdio_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
-    else
-        :
     fi
+
     return 0
 )
 

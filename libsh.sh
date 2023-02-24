@@ -19,17 +19,6 @@
 # @description
 #   lib.sh description
 #
-# Import necessary modules {{{1
-#
-# Import them manually to limit namespace pollution
-# (obviously the functions themselves will be there, but they won't be exported
-# in the same way as if @import were used)
-#
-# Sourced file cannot be found by shellcheck
-# shellcheck source=/dev/null
-. "$(dirname "$LIBSH")/stdlib.sh"
-__stdlib_sourced__=1
-
 # @section Internal functions {{{1
 #
 # _libsh_parse {{{2
@@ -70,7 +59,8 @@ _libsh_parse() {
     esac
 
     if [ $error -eq 1 ]; then
-        _libsh_error "$line" "$LIBSH_ERR_SYNTAX" "@import $*"
+        _libsh_error ESYNTAX "$line" "@import $*"
+
     else
         "_libsh_$keyword" "$line" "$@"
     fi
@@ -104,12 +94,11 @@ _libsh_parse() {
 # NOTE: cannot be a sub-shell function because it calls a non-sub-shell function
 #
 _libsh_import() {
-    stdlib_is_set LIBSH ||
-        _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
+    _libsh_is_set LIBSH ||
+        _libsh_error EFATAL "$line" "LIBSH is not defined"
 
-    # TODO: Can I work around needing local?
     line="$1"; shift
-    module="$1"; shift
+    module="$(_libsh_sanitize "$1")"; shift
     ns="$1"; shift
     func="$1"
 
@@ -141,6 +130,8 @@ _libsh_import() {
         else
             _libsh_error "$line" "$LIBSH_ERR_FATAL" "could not import '$module'"
         fi
+    else
+        _libsh_error EFATAL "$line" "could not import '$module'"
     fi
     # (Re-)load exported functions (to apply proper namespace)
     _libsh_register "$ns" "$module" "$func" "$(eval "echo \$__${module}__")"
@@ -175,7 +166,7 @@ _libsh_register() {
         if [ "${functions#*"$func"}" != "$functions" ]; then
             _libsh_alias "$ns" "$module" "$func"
         else
-            _libsh_error 0 "$LIBSH_ERR_FATAL" "$func not found in $module module"
+            _libsh_error EFATAL "$line" "'$func' not found in '$module'"
         fi
     # Registering one or more functions with an optional namespace
     else
@@ -211,49 +202,6 @@ _libsh_alias() {
     fi
 }
 
-# _libsh_error {{{2
-#
-# @description Print lib.sh errors
-#
-# @arg $1 int    Line number from caller (0 suppresses line number output)
-# @arg $2 int    Type of error (see LIBSH_ERR_*)
-# @arg $3 string Message to print
-#
-# @stderr Error messages
-#
-# @exitcode $2
-#
-# @see LIBSH_ERR_*
-#
-_libsh_error() (
-    lines=$1; shift
-    rc=$1; shift
-    msg=$1; shift
-
-    if [ "$lines" = "0" ]; then
-        lines=""
-    else
-        lines="$lines:"
-    fi
-
-    case "$rc" in
-        "$LIBSH_ERR_FATAL")
-            printf "%s:%s fatal error: %s\n" "$0" "$lines" "$msg"
-            ;;
-        "$LIBSH_ERR_SYNTAX")
-            printf "%s:%s syntax error: %s\n" "$0" "$lines" "$msg"
-            ;;
-        *)
-            printf "%s:%s unknown error: %s\n" "$0" "$lines" "$msg"
-            ;;
-    esac
-
-    if [ "$rc" -eq "$rc" ] 2>/dev/null; then
-        exit "$rc"
-    else
-        exit "$LIBSH_ERR_FATAL"
-    fi
-) >&2
 
 # _libsh_debug {{{2
 #
@@ -264,11 +212,84 @@ _libsh_error() (
 # @global LIBSH_DEBUG_ON
 #
 _libsh_debug() (
-    stdlib_option_on_off "$LIBSH_DEBUG_ON" false &&
+    _libsh_option_on_off "$LIBSH_DEBUG_ON" false &&
         printf "DEBUG: %s\n" "$1"
     return 0
 ) >&2
 
+# _libsh_error_at_line {{{2
+#
+# @description Print an annotated error message and optionally exit
+#
+# @arg $1  string    Error code
+# @arg $2  int       Line number of error (optional)
+# @arg $3  string    Additional error message
+#
+# @stderr $0:libsh.sh:$2: <error message>: $3
+#
+# @exitcode: $1 if nonzero
+#
+_libsh_error() {
+    errnum="$1"; shift
+    line="$1"; shift
+    msg="$1"; shift
+
+    case "$errnum" in
+        EFATAL)  err="fatal error";  rc=1 ;;
+        ESYNTAX) err="syntax error"; rc=2 ;;
+    esac
+
+    printf -- "$0:libsh.sh:$line: %s: %s\n" "$msg" "$err" >&2
+
+    exit "$rc" || return "$rc"
+}
+
+# _libsh_option_on_off {{{2
+#
+# @description Test if a string is set to Yes or No
+#
+# @arg $1 string Value to test
+# @arg $2 bool   Default value (true or false)
+#
+# @exitcode True if value is 1|y|Y|yes|YES|Yes
+# @exitcode False if value is 0|n|N|no|NO|No
+# @exitcode $2 if value is anything else
+# @exitcode True if $2 is neither True or False
+#
+_libsh_option_on_off() (
+    case "$1" in
+        1 | y | Y | yes | YES | Yes) return 0 ;;
+        0 | n | N | no  | NO  | No)  return 1 ;;
+        *)
+            case "$2" in
+                t | true  | T | TRUE  | True)  return 0 ;;
+                f | false | F | FALSE | False) return 1 ;;
+                *) return 0 ;;
+            esac
+    esac
+)
+
+# _libsh_is_set {{{2
+#
+# @description Test if a variable is set or not
+#
+# @arg $1 string Name of variable to check
+#
+# @exitcode True if variable is set to anything but ""
+# @exitcode False if variable is unset or set to ""
+#
+_libsh_is_set() ( eval "test \$$(_libsh_sanitize "$1")"; )
+
+# _libsh_sanitize {{{2
+#
+# @description Sanitize input. Allowed characters are those that can be in an
+#  alphanumeric path
+#
+# @arg $1 string String to sanitize
+#
+# @stdout Sanitized string
+#
+_libsh_sanitize() ( printf "%s" "$1" | tr -cd "a-zA-Z0-9_/."; )
 # Implement 'local' {{{2
 #
 # This should not be used unless you *really* need it (which libsh.sh does in
@@ -280,58 +301,31 @@ _LIBSH_VARIABLE_STACK=
 # Usage: {{{3
 #
 # - When declaring a variable to be 'local', it *cannot* be combined with
-# assignment:
+# assignment, and must be called *after* a variable has a value:
 #
 #     # OK
 #     foo=foo
-#     local foo
+#     _libsh_var_push foo
 #
 #     # Not OK
-#     local foo=foo
+#     _libsh_var_push foo=foo
 #
-# - Calls to 'local' **must** be balanced by mirrored calls to '_libsh_var_pop':
+#     # Not OK
+#     _libsh_var_push foo
+#     foo=foo
+#
+# - Calls to '_libsh_var_push' **must** be balanced by mirrored calls to '_libsh_var_pop':
 #
 #     # OK
 #     foo=foo
 #     bar=bar
-#     local foo
-#     local bar
+#     _libsh_var_push foo
+#     _libsh_var_push bar
 #
 #     other_func
 #
 #     _libsh_var_pop bar
 #     _libsh_var_pop foo
-#
-# func_a() {
-#   foo=foo
-#   bar=bar
-#   local foo
-#   local bar
-#
-#   func_b
-#
-#   _libsh_var_pop bar
-#   _libsh_var_pop foo
-#
-#   echo "foo final = $foo"
-#   echo "bar final = $bar"
-# }
-#
-# func_b() {
-#   local foo
-#   local bar
-#   foo=FOO
-#   bar=BAR
-#
-#   echo "foo in func_b = $foo"
-#   echo "bar in func_b = $bar"
-# }
-#
-# $ func_a
-#   FOO
-#   BAR
-#   foo
-#   bar
 #
 # _libsh_var_push {{{3
 #
@@ -372,7 +366,7 @@ export LIBSH_ERR_FATAL
 
 _libsh_debug "initialize libsh"
 
-stdlib_is_set LIBSH || 
+_libsh_is_set LIBSH || 
     _libsh_error 0 "$LIBSH_ERR_FATAL" "LIBSH is not defined"
 
 # Bash doesn't expand aliases in non-interactive scripts

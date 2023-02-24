@@ -23,6 +23,8 @@
 #
 __net__="has_internet"
 
+@import error
+
 # Functions {{{1
 #
 # net_has_internet {{{2
@@ -48,12 +50,7 @@ net_has_internet() {
     elif type curl >/dev/null 2>&1; then
         test "$(curl -s $url)" = "success"
     else
-        # $errno looks like it is unused
-        # shellcheck disable=SC2034
-        errno="ENOENT"
-        return 2
+        error::set_error ENOENT
     fi
-
-    return $?
 }
 
