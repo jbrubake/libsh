@@ -102,6 +102,7 @@ stdio_die() (
 # @description Print a debugging message
 #
 # @global LIBSH_DEBUG specifies optional coloring
+# @global LIBSH_DEBUG_LVL suppress output if $1 is > LIBSH_DEBUG_LVL
 #
 # @arg $1  int       Debug level
 # @arg $2  string    printf(1) format string
@@ -116,9 +117,7 @@ stdio_debug() (
 
     test "$d" -gt "$LIBSH_DEBUG_LVL" && return
 
-    if stdlib::option_on_off "$DEBUG" false; then
-        _stdio_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
-    fi
+    _stdio_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
 
     return 0
 )

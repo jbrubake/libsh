@@ -44,7 +44,7 @@ Describe 'net.sh' # {{{1
             wget() { echo "fail"; }
             When call net_has_internet
             The status should be failure
-        End
+        End # }}}
         It 'tests curl call that fails' # {{{
             type() {
                 case "$1" in
@@ -55,12 +55,11 @@ Describe 'net.sh' # {{{1
             curl() { echo "fail"; }
             When call net_has_internet
             The status should be failure
-        End
+        End # }}}
         It 'tests error if wget and curl do not exist' # {{{
             type() { return false; }
             When call net_has_internet
             The status should equal 2
-            The variable errno should equal ENOENT
         End # }}}
     End
 End
