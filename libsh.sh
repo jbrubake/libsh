@@ -19,6 +19,18 @@
 # @description
 #   lib.sh description
 #
+# @section Public functions {{{1
+#
+# ASSERT {{{2
+#
+# @description Exit if a test fails
+#
+# @args ... List of arguments to pass to test(1)
+#
+# @exitcode: Returns true if the test succeeds, otherwise exits
+#
+ASSERT() { test "$@" || _libsh_error EFATAL "$LINENO" "ASSERT $*"; }
+
 # @section Internal functions {{{1
 #
 # _libsh_parse {{{2
@@ -34,6 +46,7 @@
 # function is ready to exit
 #
 _libsh_parse() {
+    ASSERT $# -ge 2
     line="$1"; shift
     keyword="$1"; shift
     error=0
@@ -99,6 +112,7 @@ _libsh_import() {
     _libsh_is_set LIBSH ||
         _libsh_error EFATAL "$line" "LIBSH is not defined"
 
+    ASSERT $# -eq 4
     line="$1"; shift
     module="$(_libsh_sanitize "$1")"; shift
     ns="$1"; shift
@@ -165,6 +179,7 @@ _libsh_import() {
 # which does not declare variables
 #
 _libsh_register() {
+    ASSERT $# -ge 3
     ns="$1"; shift
     module="$1"; shift
     func="$1"; shift
@@ -204,6 +219,7 @@ _libsh_register() {
 # NOTE: cannot be a sub-shell function because it calls 'alias'
 #
 _libsh_alias() {
+    ASSERT $# -eq 3
     if [ -n "$1" ]; then
         _libsh_debug "register $1::$3"
         # Unquoted variables in alias are OK
@@ -245,6 +261,7 @@ _libsh_debug() (
 # @exitcode: $1 if nonzero
 #
 _libsh_error() {
+    ASSERT $# -eq 3
     errnum="$1"; shift
     line="$1"; shift
     msg="$1"; shift
@@ -353,6 +370,7 @@ _LIBSH_VARIABLE_STACK=
 # @global _LIBSH_VARIABLE_STACK_SEP
 #
 _libsh_var_push() {
+    ASSERT -n "$1"
     eval "v=\$$1"
     _LIBSH_VARIABLE_STACK="$v$_LIBSH_VARIABLE_STACK_SEP$_LIBSH_VARIABLE_STACK"
 }
@@ -367,6 +385,7 @@ _libsh_var_push() {
 # @global _LIBSH_VARIABLE_STACK_SEP
 #
 _libsh_var_pop() {
+    ASSERT -n "$1"
     v="${_LIBSH_VARIABLE_STACK%%"$_LIBSH_VARIABLE_STACK_SEP"*}"
     _LIBSH_VARIABLE_STACK="${_LIBSH_VARIABLE_STACK#"$v$_LIBSH_VARIABLE_STACK_SEP"}"
     eval "$1=$v"

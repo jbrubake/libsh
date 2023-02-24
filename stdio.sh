@@ -52,6 +52,7 @@ fi
 # @stderr $1
 #
 stdio_mesg() (
+    ASSERT $# -ge 1
     v="$1"; shift
     test "$v" -gt "$LIBSH_VERBOSE" && return
     _stdio_printf "$LIBSH_MESG" "$@"
@@ -69,6 +70,7 @@ stdio_mesg() (
 # @stderr $1
 #
 stdio_warn() (
+    ASSERT $# -ge 1
     fmt="$1"; shift
 
     _stdio_printf "$LIBSH_WARN" "$fmt" "$@" >&2
@@ -87,6 +89,7 @@ stdio_warn() (
 # @stderr $1
 #
 stdio_die() (
+    ASSERT $# -ge 2
     rc="$1"; shift
     fmt="$1"; shift
 
@@ -107,6 +110,7 @@ stdio_die() (
 # @stderr $1
 #
 stdio_debug() (
+    ASSERT $# -ge 2
     d="$1"; shift
     fmt="$1"; shift
 
@@ -132,6 +136,7 @@ stdio_debug() (
 # @stderr $fmt
 #
 _stdio_printf() (
+    ASSERT $# -ge 2
     fmt="$1$2"; shift 2
 
     # Variable in printf format is OK

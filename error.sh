@@ -40,6 +40,7 @@ __error__="perror strerror error error_at_line is_error set_error"
 # @exitcode: $1 if nonzero
 #
 error_error() (
+    ASSERT $# -ge 3
     status="$1"; shift
     errnum="$1"; shift
     fmt="$1"; shift
@@ -72,6 +73,7 @@ error_error() (
 # @exitcode: $1 if nonzero
 #
 error_error_at_line() {
+    ASSERT $# -ge 5
     status="$1"; shift
     errnum="$1"; shift
     file="$1"; shift
@@ -178,6 +180,7 @@ error_set_error() { _error_sys_errlist "$1" >/dev/null; }
 # @stderr $fmt
 #
 _error_printf() (
+    ASSERT $# -eq 2
     fmt="$1$2"; shift 2
 
     # Variable in printf format is OK
