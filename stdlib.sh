@@ -21,9 +21,20 @@
 #
 # Initialization {{{1
 #
-__stdlib__="option_on_off is_set sanitize"
+__stdlib__="have option_on_off is_set sanitize"
 
 # @section Exported functions {{{1
+# stdlib_have {{{2
+#
+# @description Check if a program is in PATH
+#
+# @arg $1 string Program to look for
+#
+# @exitcode True if program is in PATH
+# @exitcode False if program is not in PATH
+#
+stdlib_have() ( command -v "$1" >/dev/null 2>&1;)
+
 # stdlib_option_on_off {{{2
 #
 # @description Test if a string is set to Yes or No
