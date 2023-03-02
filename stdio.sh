@@ -54,7 +54,7 @@ fi
 stdio_mesg() (
     ASSERT $# -ge 1
     v="$1"; shift
-    test "$v" -gt "$LIBSH_VERBOSE" && return
+    test "$v" -gt "${LIBSH_VERBOSE_LVL:-0}" && return
     _stdio_printf "$LIBSH_MESG" "$@"
 )
 
@@ -115,7 +115,7 @@ stdio_debug() (
     d="$1"; shift
     fmt="$1"; shift
 
-    test "$d" -gt "$LIBSH_DEBUG_LVL" && return
+    test "$d" -gt "${LIBSH_DEBUG_LVL:-0}" && return
 
     _stdio_printf "$LIBSH_DEBUG" "$fmt" "$@" >&2
 
