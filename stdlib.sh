@@ -21,7 +21,7 @@
 #
 # Initialization {{{1
 #
-__stdlib__="have option_on_off is_set sanitize random_str random"
+__stdlib__="have option_on_off is_set sanitize random_str random realpath"
 
 @import error
 
@@ -125,4 +125,57 @@ stdlib_random() (
             print int(min + rand() * (max - min + 1))
         }'
 )
+
+# stdlib_realpath {{{2
+#
+# @description expand all symbolic links and resolve references to /./, /../ and
+# extra '/' characters to produce a canonicalized path
+#
+# @arg $1 string Path to canonicalize
+#
+# @errors
+#   EINVAL: Path is null
+#   EACESS: Path prefix could not be found or read
+#   ENOENT: The path does not exist
+#
+# @stdout Canonicalized path
+#
+stdlib_realpath() {
+      if   [ -z "$1" ]; then
+        error::set_error EINVAL # 22
+        return
+    elif ! [ -r "$(dirname "$1")" ]; then
+        error::set_error EACCES # 13
+        return
+    elif ! [ -r "$1" ]; then
+        error::set_error ENOENT # 2
+        return
+    fi
+
+    dir=$(dirname "$1")
+    file=$(basename "$1")
+
+    # If the path is a link, get its target
+    if [ -h "$1" ]; then
+        file=$(find "$dir" -maxdepth 1 -name "$file" -exec ls -ld {} \; |
+            rev | cut -d' ' -f1 | rev)
+    fi
+
+    # Just print absolute paths, otherwise canonicalize
+    # relative paths
+    case $file in
+        /*) printf "%s\n" "$file" ;;
+        *)  dir="$dir/$(dirname "$file")"
+            if ! [ -d "$dir" ]; then
+                error:set_error EACCES
+                return
+            fi
+            # We can ignore failing to cd as we already
+            # verified that the directory does actually exist
+            # shellcheck disable=SC2164
+            dir=$(cd "$dir"; pwd)
+            printf "%s\n" "$dir/$(basename "$file")" 
+            ;;
+    esac
+}
 
