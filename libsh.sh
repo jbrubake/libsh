@@ -19,6 +19,9 @@
 # @description
 #   lib.sh description
 #
+if ! [ "$__libsh__" ]; then
+    __libsh__=1
+
 # @section Public functions {{{1
 #
 # ASSERT {{{2
@@ -418,3 +421,4 @@ else
     alias @import="_libsh_parse ? import"
 fi
 
+fi
