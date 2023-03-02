@@ -88,14 +88,14 @@ stdio_warn() (
 #
 # @stderr $1
 #
-stdio_die() (
+stdio_die() {
     ASSERT $# -ge 2
     rc="$1"; shift
     fmt="$1"; shift
 
     _stdio_printf "$LIBSH_ERROR" "$fmt" "$@" >&2
     exit "$rc" || return "$rc"
-)
+}
 
 # stdio_debug {{{2
 #
