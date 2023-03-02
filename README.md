@@ -4,6 +4,7 @@ To use `libsh`, you must define the location of the library and load it.  The
 location of the library should, ideally be set in your shell startup files:
 
     LIBSH=<path/to/libsh.sh>
+    export LIBSH
 
 Then, place the following at the beginning of any script which is to use
 `libsh`:
