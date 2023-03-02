@@ -1,0 +1,8 @@
+- Add to @import:
+  @import foo.bar -> foo::bar only
+  @import foo.bar as baz -> foo::bar as baz::bar only
+- Use Makefile to generate the __<module>__ variables
+- Add a doc module that implements print_help and print_version
+- color.sh should, by default, not print color if not outputting to a terminal
+- stdio.sh: mesg and debug need to assert that their priority level arg is
+  actually an integer
