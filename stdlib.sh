@@ -21,7 +21,9 @@
 #
 # Initialization {{{1
 #
-__stdlib__="have option_on_off is_set sanitize"
+__stdlib__="have option_on_off is_set sanitize random_str random"
+
+@import error
 
 # @section Exported functions {{{1
 # stdlib_have {{{2
@@ -85,5 +87,42 @@ stdlib_sanitize() (
         allowed="a-zA-Z0-9_"
     fi
     printf "%s" "$1" | tr -cd "$allowed"
+)
+
+# stdlib_random_str {{{2
+#
+# @description: Generate a random string
+#
+# @arg $1 int    Number of characters to generate
+# @arg $2 string Allowed characters
+#
+# @stdout Generated string
+#
+# TODO: fallback to awk (only once per second) if /dev/random not available
+stdlib_random_str() (
+    ASSERT $# -ge 1
+    </dev/random tr -cd "${2:-[:alpha:]}" \
+        | head -c"$1" 
+)
+
+# stdlib_random {{{2
+#
+# @description Generate a random number within a range
+#
+# @arg $1 int Minimum number
+# @arg $2 int Maximum number
+#
+# @stdout Random number bewteen $1 and $2 (inclusive)
+#
+stdlib_random() (
+    ASSERT $# -eq 1 -o $# -eq 2
+
+    # Pass in a seed, otherwise awk won't generate a
+    # new number for one second
+    awk -v seed="$(date +%N)" -v min="$1" -v max="$2" \
+        'BEGIN {
+            srand(seed)
+            print int(min + rand() * (max - min + 1))
+        }'
 )
 
