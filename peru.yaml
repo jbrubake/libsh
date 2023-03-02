@@ -1,0 +1,14 @@
+imports:
+  getoptions: ./
+  gengetoptions: ./
+
+curl module getoptions:
+  url: https://github.com/ko1nksm/getoptions/releases/latest/download/getoptions
+  executable: getoptions
+  sha1: 2ffd4da9b00e746071418f4baa8e3aa235365c89
+
+curl module gengetoptions:
+  url: https://github.com/ko1nksm/getoptions/releases/latest/download/gengetoptions
+  executable: gengetoptions
+  sha1: 82b040c682a62326716be00cf7eacd800a794863
+

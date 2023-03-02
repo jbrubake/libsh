@@ -14,4 +14,7 @@ install:
 	install -t $(PREFIX)/$(LIBDIR) $(SRC) 
 	install -t $(PREFIX)/$(SHAREDIR) $(DOCS)
 
+.PHONY: getoptions
+getoptions:
+	./gengetoptions library > getoptlib.sh
 
